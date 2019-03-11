@@ -3,7 +3,7 @@ package com.company;
 public class Nucleotide {
 
 	protected String type;
-	protected boolean paired;
+	boolean paired;
 	protected int connectedIndex = -1;
 
 	protected Nucleotide(String type){
@@ -13,6 +13,12 @@ public class Nucleotide {
 
 	protected void connect(int index){
 		connectedIndex = index;
+		paired = true;
+	}
+
+	protected  int disconnect(){
+		paired = false;
+		return connectedIndex;
 	}
 
 	public String toString(){

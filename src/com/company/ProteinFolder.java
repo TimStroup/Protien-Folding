@@ -11,13 +11,17 @@ public class ProteinFolder {
 
     public static void main(String[] args) throws FileNotFoundException {
 		ArrayList<Nucleotide> sequence = new ArrayList<>();
-        readRNASequence("input2.txt",sequence);
+        readRNASequence("input5.txt",sequence);
         System.out.println(Arrays.toString(sequence.toArray()));
         System.out.println(sequence.size());
 
         if(sequence.size() < 5){
         	System.out.println(0);
 		}
+        else{
+			System.out.println(simulatedAnnealing(sequence));
+		}
+
     }
 
     private static void readRNASequence(String fileName,ArrayList<Nucleotide> sequence) throws FileNotFoundException {
@@ -37,11 +41,21 @@ public class ProteinFolder {
 		int numPairs = 0;
 		int maxPairs = 0;
 		int time = 1;
-		double temp = Double.MAX_VALUE;
+		double temp = 100.0;
 
 		while(true){
 			temp = schedule(time);
-			if(temp == 0){
+			if(temp <= 0){
+				int numPaired = 0;
+				for(Nucleotide nucleotide: sequence){
+					if(nucleotide.paired){
+						numPaired++;
+					}
+				}
+				numPairs = numPaired/2;
+				if(numPairs > maxPairs){
+					maxPairs= numPairs;
+				}
 				return maxPairs;
 			}
 			boolean notDone = true;
@@ -50,32 +64,92 @@ public class ProteinFolder {
 				randomIndex = getRandomIndex(sequence.size());
 				//if it is paired we will try to break it up based on temp
 				if(sequence.get(randomIndex).paired){
-
+					//compute the probability to choose the
+					double randProb = Math.random();
+					double probOfChange = Math.exp(-1.0/temp);
+					if(probOfChange > randProb){
+						int connectedIndex = sequence.get(randomIndex).disconnect();
+						sequence.get(connectedIndex).disconnect();
+						numPairs--;
+						notDone =false;
+					}
+					notDone = false;
 				}
 				//otherwise we will try to match the nucleotide with another one
 				//also update the number of pairs and if it is greater than the max update that as well
 				else{
-					if( attemptPair(randomIndex,sequence)){
-						numPairs++;
-						if(numPairs > maxPairs){
-							maxPairs = numPairs;
-						}
+					if(attemptPair(randomIndex,sequence)){
+
 						notDone = false;
 					}
 				}
 			}
+			time++;
 		}
 	}
 
 	private static boolean attemptPair(int randomIndex, ArrayList<Nucleotide> sequence) {
+		String type = sequence.get(randomIndex).type;
+		boolean result = false;
+		if(randomIndex + 4 > sequence.size()){ }
+		else {
+			for(int i = randomIndex+4; i < sequence.size();i++){
+				result = pairCheck(type,sequence,i,randomIndex);
+				if(result){
+					break;
+				}
+			}
+		}
 
+		if(!result){
+			if(randomIndex -4 < 0){ }
+			else {
+				for(int i = randomIndex -4; i > 0; i--){
+					result = pairCheck(type,sequence,i,randomIndex);
+					if(result){
+						break;
+					}
+				}
+			}
+		}
+		return result;
+	}
 
+	private static boolean pairCheck(String type, ArrayList<Nucleotide> sequence,int i, int randomIndex){
+		if(type.equals("A")){
+			if(sequence.get(i).type.equals("U") && !sequence.get(i).paired){
+				sequence.get(randomIndex).connect(i);
+				sequence.get(i).connect(randomIndex);
+				return true;
+			}
+		}
+		else if(type.equals("C")){
+			if(sequence.get(i).type.equals("G") && !sequence.get(i).paired ){
+				sequence.get(randomIndex).connect(i);
+				sequence.get(i).connect(randomIndex);
+				return true;
+			}
+		}
+		else if(type.equals("G")){
+			if((sequence.get(i).type.equals("U") || sequence.get(i).type.equals("C")) && !sequence.get(i).paired){
+				sequence.get(randomIndex).connect(i);
+				sequence.get(i).connect(randomIndex);
+				return true;
+			}
+		}
+		else {
+			if((sequence.get(i).type.equals("A") || sequence.get(i).type.equals("G")) && !sequence.get(i).paired){
+				sequence.get(randomIndex).connect(i);
+				sequence.get(i).connect(randomIndex);
+				return true;
+			}
+		}
 		return false;
 	}
 
 	private static double schedule(int time) {
     	//TODO create a function that maps time to a temperature value
-		return 0;
+		return(100.0 - (.000002 * time));
 	}
 
 	private static int getRandomIndex(int max) {
