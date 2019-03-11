@@ -7,17 +7,26 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 public class ProteinFolder {
-    private static ArrayList<String> sequence = new ArrayList<>();
 
     public static void main(String[] args) throws FileNotFoundException {
-        readRNASequence("input.txt");
+		ArrayList<Nucleotide> sequence = new ArrayList<>();
+        readRNASequence("input5.txt",sequence);
         System.out.println(Arrays.toString(sequence.toArray()));
+        System.out.println(sequence.size());
     }
 
-    private static void readRNASequence(String fileName) throws FileNotFoundException {
+    private static void readRNASequence(String fileName,ArrayList<Nucleotide> sequence) throws FileNotFoundException {
         Scanner scan = new Scanner(new File(fileName));
         String[] letters = scan.next().split("");
-        sequence.addAll(Arrays.asList(letters));
+        for(String letter: letters){
+        	sequence.add(new Nucleotide(letter));
+		}
     }
+
+    private static int simulatedAnnealing(ArrayList<Nucleotide> sequence){
+
+
+    	return 0;
+	}
 
 }
