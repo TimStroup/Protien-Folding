@@ -1,26 +1,30 @@
 package com.company;
 
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
 public class ProteinFolder {
 
     public static void main(String[] args) throws FileNotFoundException {
-		ArrayList<Nucleotide> sequence = new ArrayList<>();
-        readRNASequence("input5.txt",sequence);
-        System.out.println(Arrays.toString(sequence.toArray()));
-        System.out.println(sequence.size());
+    	if(args.length <1){
+    		System.out.println("You must provide the file name as an argument");
+		}
+		else{
+			ArrayList<Nucleotide> sequence = new ArrayList<>();
+			readRNASequence(args[0],sequence);
 
-        if(sequence.size() < 5){
-        	System.out.println(0);
+			if(sequence.size() < 5){
+				System.out.println(0);
+			}
+			else{
+				System.out.println(simulatedAnnealing(sequence));
+			}
 		}
-        else{
-			System.out.println(simulatedAnnealing(sequence));
-		}
+
 
     }
 
@@ -44,7 +48,7 @@ public class ProteinFolder {
 		double temp = 100.0;
 
 		while(true){
-			temp = schedule(time);
+			temp = schedule(time,sequence.size());
 			if(temp <= 0){
 				int numPaired = 0;
 				for(Nucleotide nucleotide: sequence){
@@ -147,9 +151,15 @@ public class ProteinFolder {
 		return false;
 	}
 
-	private static double schedule(int time) {
+	private static double schedule(int time,int length) {
     	//TODO create a function that maps time to a temperature value
-		return(100.0 - (.000002 * time));
+		if(length > 100){
+			return(100.0 - (.000002 * time));
+		}
+		else{
+			return (100.0 - (.0002 * time));
+		}
+
 	}
 
 	private static int getRandomIndex(int max) {
